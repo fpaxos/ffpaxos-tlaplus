@@ -31,7 +31,13 @@ Max(S) == CHOOSE i \in S : \A j \in S : j \leq i
 (* $Coord(i)$ &    the coordinator of round $i$.                           *)
 (* \end{tabular}^'                                                           *)
 (***************************************************************************)
-CONSTANTS Val, Acceptor, FastNum, QuorumP1(_), QuorumP2(_), Coord, CoordOf(_)
+CONSTANTS Val, 
+          Acceptor, 
+          FastNum,
+          QuorumP1(_),
+          QuorumP2(_),
+          Coord,
+          CoordOf(_)
 
 (***************************************************************************)
 (*`^$RNum$ is defined to be the set of positive integers, which is the set  *)
@@ -305,7 +311,7 @@ CoordRetransmit(c) ==
   /\ amLeader[c]
   /\ crnd[c] # 0
   /\ Send(coordLastMsg(c))
-  /\ UNCHANGED <<aVars, cVars, oVars>> \* amLeader, proposed, learned, goodSet
+  /\ UNCHANGED <<aVars, cVars, oVars>>
 
 (***************************************************************************)
 (*`^$CoordNext(c)$ is the next-state action of coordinator $c$---that is,   *)
@@ -362,8 +368,8 @@ Phase2b(i, a, v) ==
 (* recovery, described in Fast Paxos, Section 3.2 on             *)
 (* page 21.  With this action, acceptor $a$     *)
 (* attempts to recover from a collision in round $i$ by sending a round    *)
-(* $i+1$ phase~2b message with value $v$.  
-(* \underline{This action has been modified to use phase-1 quorums.}^' *)                                *)
+(* $i+1$ phase~2b message with value $v$.  *)
+(* \underline{This action has been modified to use phase-1 quorums.}^' *)                             
 (***************************************************************************)
 UncoordinatedRecovery(i, a, v) ==  
   /\ i+1 \in FastNum
@@ -395,7 +401,7 @@ accLastMsg(a) ==
 AcceptorRetransmit(a) ==
   /\ rnd[a] # 0
   /\ Send(accLastMsg(a))
-  /\ UNCHANGED <<aVars, cVars, oVars>> \* amLeader, proposed, learned, goodSet
+  /\ UNCHANGED <<aVars, cVars, oVars>> 
 
 (***************************************************************************)
 (*`^$AcceptorNext(a)$ is the next-state action of acceptor $a$---that is,   *)
@@ -478,7 +484,7 @@ LoseMsg(m) ==
           /\ m = accLastMsg(m.acc)
           /\ m.acc \in goodSet
   /\ sentMsg' = sentMsg \ {m}
-  /\ UNCHANGED <<aVars, cVars, oVars>> \* amLeader, proposed, learned, goodSet
+  /\ UNCHANGED <<aVars, cVars, oVars>>
 
 (***************************************************************************)
 (*`^Action $OtherAction$ is the disjunction of all actions other than ones  *)
