@@ -1,0 +1,11 @@
+*.toolbox/*.aux
+*.toolbox/*.log
+*.toolbox/*.fdb_latexmk
+*.toolbox/*.fls
+*.toolbox/*.synctex.gz
+*.toolbox/*.pdf
+*.toolbox/*.tex
+*.toolbox/*/*.out
+*.toolbox/*SnapShot*
+*.pdf
+.DS_Store
