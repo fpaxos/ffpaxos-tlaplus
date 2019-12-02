@@ -12,7 +12,7 @@
     <stringAttribute key="distributedTLC" value="off"/>
     <stringAttribute key="distributedTLCVMArgs" value=""/>
     <intAttribute key="fpBits" value="1"/>
-    <intAttribute key="fpIndex" value="79"/>
+    <intAttribute key="fpIndex" value="38"/>
     <booleanAttribute key="fpIndexRandom" value="true"/>
     <intAttribute key="maxHeapSize" value="25"/>
     <intAttribute key="maxSetSize" value="1000000"/>
@@ -37,11 +37,12 @@
     <stringAttribute key="modelParameterActionConstraint" value=""/>
     <listAttribute key="modelParameterConstants">
         <listEntry value="Val;;{v1, v2};1;1"/>
-        <listEntry value="FastNum;;{};0;0"/>
+        <listEntry value="FastNum;;{1};0;0"/>
         <listEntry value="Coord;;{c1, c2};1;0"/>
-        <listEntry value="Acceptor;;{a1, a2, a3, a4};1;1"/>
+        <listEntry value="Acceptor;;{a1, a2, a3};1;1"/>
         <listEntry value="CoordOf;i:;c1;0;0"/>
-        <listEntry value="Quorum;i:;{{a1,a2},{a1,a3},{a2,a3}};0;0"/>
+        <listEntry value="QuorumP1;i:;{{a1,a2,a3}};0;0"/>
+        <listEntry value="QuorumP2;i:;{{a1,a2},{a2,a3},{a1,a3}};0;0"/>
     </listAttribute>
     <stringAttribute key="modelParameterContraint" value=""/>
     <listAttribute key="modelParameterDefinitions">

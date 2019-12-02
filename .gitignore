@@ -2,6 +2,7 @@
 *.toolbox/*.log
 *.toolbox/*.fdb_latexmk
 *.toolbox/*.fls
+*.toolbox/*.dvi
 *.toolbox/*.synctex.gz
 *.toolbox/*.pdf
 *.toolbox/*.tex

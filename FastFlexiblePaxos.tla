@@ -25,12 +25,13 @@ Max(S) == CHOOSE i \in S : \A j \in S : j \leq i
 (* $Val$ &    the set of values that may be proposed.\\                    *)
 (* $Acceptor$ &    the set of acceptors.\\                                 *)
 (* $FastNum$ &    the set of fast round numbers.\\                         *)
-(* $Quorum(i)$ &    the set of $i$-quorums.\\                              *)
+(* \underline{$QuorumP1(i)$} & \underline{the set of phase-1 $i$-quorums.}\\    *)
+(* \underline{$QuorumP2(i)$} & \underline{the set of phase-2 $i$-quorums.}\\    *)
 (* $Coord$ &    the set of coordinators.\\                                 *)
 (* $Coord(i)$ &    the coordinator of round $i$.                           *)
 (* \end{tabular}^'                                                           *)
 (***************************************************************************)
-CONSTANTS Val, Acceptor, FastNum, Quorum(_), Coord, CoordOf(_)
+CONSTANTS Val, Acceptor, FastNum, QuorumP1(_), QuorumP2(_), Coord, CoordOf(_)
 
 (***************************************************************************)
 (*`^$RNum$ is defined to be the set of positive integers, which is the set  *)
@@ -56,17 +57,23 @@ ClassicNum == RNum \ FastNum
 ASSUME IsFiniteSet(Acceptor)
   
 (***************************************************************************)
-(*`^The following asserts the assumptions that $Quorum(i)$ is a set of sets *)
-(* of acceptors, for every round number $i$, and that the Quorum           *)
-(* Requirement (Fast Paxos, Section 3.1,                       *)
-(* page 19) holds.^'                            *)
+(*`^The following asserts the assumptions that *)
+(* \underline{both $QuorumP1(i)$ and $QuorumP2(i)$} *)
+(* are set of sets of acceptors, for every round number $i$.^'          *)
 (***************************************************************************)
 ASSUME \A i \in RNum : 
-         /\ Quorum(i) \subseteq SUBSET Acceptor
+         /\ QuorumP1(i) \subseteq SUBSET Acceptor
+         /\ QuorumP2(i) \subseteq SUBSET Acceptor
+                     
+(***************************************************************************)
+(*`^ \underline{The following asserts the quorum intersection requirement     *)
+(* of Fast Flexible Paxos holds.}^'                            *)
+(***************************************************************************)
+ASSUME \A i \in RNum : 
          /\ \A j \in RNum : 
-              /\ \A Q \in Quorum(i), R \in Quorum(j) : Q \cap R # {}
+              /\ \A Q \in QuorumP1(i), R \in QuorumP2(j) : Q \cap R # {}
               /\ (j \in FastNum) => 
-                   \A Q \in Quorum(i) : \A R1, R2 \in Quorum(j) : 
+                   \A Q \in QuorumP1(i) : \A R1, R2 \in QuorumP2(j) : 
                      Q \cap R1 \cap R2 # {}
 
 (***************************************************************************)
@@ -202,14 +209,15 @@ MsgsFrom(Q, i, phase) ==
 (* in a quorum $Q$, then $IsPickableVal(Q, i, M, v)$ is true iff the rule  *)
 (* of Fast Paxos, Figure 2                                   *)
 (* (page 20) allows the coordinator to send   *)
-(* the value $v$ in a phase 2a message for round~$i$.^'                      *)
+(* the value $v$ in a phase 2a message for round~$i$.                      *)
+(* \underline{$Q4(w)$ has been modified to use phase-2 quorums.}^' *)
 (***************************************************************************)
 IsPickableVal(Q, i, M, v) ==
   LET vr(a) == (CHOOSE m \in M : m.acc = a).vrnd
       vv(a) == (CHOOSE m \in M : m.acc = a).vval
       k == Max({vr(a) : a \in Q})
       V == {vv(a) : a \in {b \in Q : vr(b) = k}}
-      O4(w) == \E R \in Quorum(k) :
+      O4(w) == \E R \in QuorumP2(k) :
                  \A a \in R \cap Q : (vr(a) = k) /\ (vv(a) = w)
   IN  IF k = 0 THEN \/ v \in proposed
                     \/ /\ i \in FastNum
@@ -225,14 +233,15 @@ IsPickableVal(Q, i, M, v) ==
 (* coordinator $c$ with value $v$, as described in                         *)
 (* Fast Paxos, Section 2.2.1 (on page 5) and               *)
 (* Fast Paxos, Section 2.2.2 (page 6), and refined by  *)
-(* CA2$'$ (Fast Paxos, Section 3.3, page 22). ^'              *)
+(* CA2$'$ (Fast Paxos, Section 3.3, page 22).               *)
+(* \underline{This action has been modified to use phase-1 quorums.}^' *)
 (***************************************************************************)
 Phase2a(c, v) ==
   LET i == crnd[c]
   IN  /\ i # 0
       /\ cval[c] = none
       /\ amLeader[c]
-      /\ \E Q \in Quorum(i) : 
+      /\ \E Q \in QuorumP1(i) : 
            /\ \A a \in Q : \E m \in MsgsFrom(Q, i, "phase1b") : m.acc = a
            /\ IsPickableVal(Q, i, MsgsFrom(Q, i, "phase1b"), v)
       /\ cval' = [cval EXCEPT ![c] = v]
@@ -258,14 +267,15 @@ P2bToP1b(Q, i) ==
 (* (Fast Paxos, Section 3.3, page 22) implies that this     *)
 (* action should be performed only if $crnd[c]+1$ is a classic round, that *)
 (* restriction is not required for correctness and is omitted from the     *)
-(* specification.^'                                                          *)
+(* specification.                                                          *)
+(* \underline{This action has been modified to use phase-1 quorums.}^' *)
 (***************************************************************************)
 CoordinatedRecovery(c, v) ==
   LET i == crnd[c] 
   IN  /\ amLeader[c]
       /\ cval[c] = any
       /\ c = CoordOf(i+1)
-      /\ \E Q \in Quorum(i+1) : 
+      /\ \E Q \in QuorumP1(i+1) : 
            /\ \A a \in Q : \E m \in P2bToP1b(Q, i) : m.acc  = a
            /\ IsPickableVal(Q, i+1, P2bToP1b(Q, i), v)
       /\ cval' = [cval EXCEPT ![c] = v]
@@ -352,12 +362,13 @@ Phase2b(i, a, v) ==
 (* recovery, described in Fast Paxos, Section 3.2 on             *)
 (* page 21.  With this action, acceptor $a$     *)
 (* attempts to recover from a collision in round $i$ by sending a round    *)
-(* $i+1$ phase~2b message with value $v$.^'                                  *)
+(* $i+1$ phase~2b message with value $v$.  
+(* \underline{This action has been modified to use phase-1 quorums.}^' *)                                *)
 (***************************************************************************)
 UncoordinatedRecovery(i, a, v) ==  
   /\ i+1 \in FastNum
   /\ rnd[a] \leq i
-  /\ \E Q \in Quorum(i+1) : 
+  /\ \E Q \in QuorumP1(i+1) : 
         /\ \A b \in Q : \E m \in P2bToP1b(Q, i) : m.acc = b
         /\ IsPickableVal(Q, i+1, P2bToP1b(Q, i), v) 
   /\ rnd'  = [rnd  EXCEPT ![a] = i+1]
@@ -411,11 +422,12 @@ Propose(v) ==
 
 (***************************************************************************)
 (*`^Action $Learn(v)$ represents the learning of a value $v$ by some        *)
-(* learner.^'                                                                *)
+(* learner.                                                                *)
+(* \underline{This action has been modified to use phase-2 quorums.}^' *)
 (***************************************************************************)
 Learn(v) ==
   /\ \E i \in RNum :
-       \E Q \in Quorum(i) : 
+       \E Q \in QuorumP2(i) : 
          \A a \in Q : 
            \E m \in sentMsg : /\ m.type = "phase2b"
                               /\ m.rnd  = i
@@ -565,11 +577,13 @@ LA(c, Q) ==
 (* property of Fast Paxos, described in Fast Paxos, Sections 2.3        *)
 (* and 3.3.  The temporal formula $<>[]LA(c,Q)$        *)
 (* asserts that $LA(c,Q)$ holds from some time on, and $<>(learned \neq \{\})$*)
-(* asserts that some value is eventually learned.^'                          *)
+(* asserts that some value is eventually learned.                          *)
+(* \underline{CHECK! This theorem has been modified to use both phase-1 and phase-2 quorums.}^' *)
 (***************************************************************************)
 THEOREM /\ Spec 
         /\ \E Q \in SUBSET Acceptor :
-               /\ \A i \in ClassicNum : Q \in Quorum(i)
+               /\ \A i \in ClassicNum : /\ Q \in QuorumP1(i)
+                                        /\ Q \in QuorumP2(i)
                /\ \E c \in Coord : <>[]LA(c, Q)
         => <>(learned # {})
 =============================================================================
