@@ -19,25 +19,15 @@ EXTENDS Naturals, FiniteSets
 Max(S) == CHOOSE i \in S : \A j \in S : j \leq i
 
 (***************************************************************************)
-(*`^The next statement declares the specification's constant parameters,    *)
-(* which have the following meanings:\\ %                             *)
-(* \begin{tabular}{l@{ }l}                                                 *)
-(* $Val$ &    the set of values that may be proposed.\\                    *)
-(* $Acceptor$ &    the set of acceptors.\\                                 *)
-(* $FastNum$ &    the set of fast round numbers.\\                         *)
-(* \underline{$QuorumP1(i)$} & \underline{the set of phase-1 $i$-quorums.}\\    *)
-(* \underline{$QuorumP2(i)$} & \underline{the set of phase-2 $i$-quorums.}\\    *)
-(* $Coord$ &    the set of coordinators.\\                                 *)
-(* $Coord(i)$ &    the coordinator of round $i$.                           *)
-(* \end{tabular}^'                                                           *)
+(*`^The next statement declares the specification's constant parameters.^'   *)
 (***************************************************************************)
-CONSTANTS Val, 
-          Acceptor, 
-          FastNum,
-          QuorumP1(_),
-          QuorumP2(_),
-          Coord,
-          CoordOf(_)
+CONSTANTS Val,          \* the set of values that may be proposed.
+          Acceptor,     \* the set of acceptors.
+          FastNum,      \* the set of fast round numbers.
+          QuorumP1(_),  \* `^\underline{the set of phase-1 $i$-quorums.}^'
+          QuorumP2(_),  \* `^\underline{the set of phase-2 $i$-quorums.}^'
+          Coord,        \* the set of coordinators.
+          CoordOf(_)    \*`^the coordinator of round $i$.^'
 
 (***************************************************************************)
 (*`^$RNum$ is defined to be the set of positive integers, which is the set  *)
@@ -280,6 +270,7 @@ CoordinatedRecovery(c, v) ==
   LET i == crnd[c] 
   IN  /\ amLeader[c]
       /\ cval[c] = any
+      /\ i+1 \in RNum
       /\ c = CoordOf(i+1)
       /\ \E Q \in QuorumP1(i+1) : 
            /\ \A a \in Q : \E m \in P2bToP1b(Q, i) : m.acc  = a
@@ -584,12 +575,13 @@ LA(c, Q) ==
 (* and 3.3.  The temporal formula $<>[]LA(c,Q)$        *)
 (* asserts that $LA(c,Q)$ holds from some time on, and $<>(learned \neq \{\})$*)
 (* asserts that some value is eventually learned.                          *)
-(* \underline{CHECK! This theorem has been modified to use both phase-1 and phase-2 quorums.}^' *)
+(* \underline{This theorem has been modified assume that Q includes both a phase-1 and phase-2 quorum.}^' *)
 (***************************************************************************)
 THEOREM /\ Spec 
         /\ \E Q \in SUBSET Acceptor :
-               /\ \A i \in ClassicNum : /\ Q \in QuorumP1(i)
-                                        /\ Q \in QuorumP2(i)
+               /\ \A i \in ClassicNum : 
+                    /\ \E Q1 \in QuorumP1(i): Q1 \subseteq Q
+                    /\ \E Q2 \in QuorumP2(i): Q2 \subseteq Q
                /\ \E c \in Coord : <>[]LA(c, Q)
         => <>(learned # {})
 =============================================================================

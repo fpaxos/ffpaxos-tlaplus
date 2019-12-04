@@ -19,19 +19,15 @@ EXTENDS Naturals, FiniteSets
 Max(S) == CHOOSE i \in S : \A j \in S : j \leq i
 
 (***************************************************************************)
-(*`^The next statement declares the specification's constant parameters,    *)
-(* which have the following meanings:\\ %                             *)
-(* \begin{tabular}{l@{ }l}                                                 *)
-(* $Val$ &    the set of values that may be proposed.\\                    *)
-(* $Acceptor$ &    the set of acceptors.\\                                 *)
-(* $FastNum$ &    the set of fast round numbers.\\                         *)
-(* \underline{$QuorumP1(i)$} & \underline{the set of phase-1 $i$-quorums.}\\    *)
-(* \underline{$QuorumP2(i)$} & \underline{the set of phase-2 $i$-quorums.}\\    *)
-(* $Coord$ &    the set of coordinators.\\                                 *)
-(* $Coord(i)$ &    the coordinator of round $i$.                           *)
-(* \end{tabular}^'                                                           *)
+(*`^The next statement declares the specification's constant parameters.^'   *)
 (***************************************************************************)
-CONSTANTS Val, Acceptor, FastNum, QuorumP1(_), QuorumP2(_), Coord, CoordOf(_)
+CONSTANTS Val,          \* the set of values that may be proposed.
+          Acceptor,     \* the set of acceptors.
+          FastNum,      \* the set of fast round numbers.
+          QuorumP1(_),  \* `^\underline{the set of phase-1 $i$-quorums.}^'
+          QuorumP2(_),  \* `^\underline{the set of phase-2 $i$-quorums.}^'
+          Coord,        \* the set of coordinators.
+          CoordOf(_)    \*`^the coordinator of round $i$.^'
 
 (***************************************************************************)
 (*`^$RNum$ is defined to be the set of positive integers, which is the set  *)
@@ -274,6 +270,7 @@ CoordinatedRecovery(c, v) ==
   LET i == crnd[c] 
   IN  /\ amLeader[c]
       /\ cval[c] = any
+      /\ i+1 \in RNum
       /\ c = CoordOf(i+1)
       /\ \E Q \in QuorumP1(i+1) : 
            /\ \A a \in Q : \E m \in P2bToP1b(Q, i) : m.acc  = a
@@ -305,7 +302,7 @@ CoordRetransmit(c) ==
   /\ amLeader[c]
   /\ crnd[c] # 0
   /\ Send(coordLastMsg(c))
-  /\ UNCHANGED <<aVars, cVars, oVars>> \* amLeader, proposed, learned, goodSet
+  /\ UNCHANGED <<aVars, cVars, oVars>>
 
 (***************************************************************************)
 (*`^$CoordNext(c)$ is the next-state action of coordinator $c$---that is,   *)
@@ -362,8 +359,8 @@ Phase2b(i, a, v) ==
 (* recovery, described in Fast Paxos, Section 3.2 on             *)
 (* page 21.  With this action, acceptor $a$     *)
 (* attempts to recover from a collision in round $i$ by sending a round    *)
-(* $i+1$ phase~2b message with value $v$.  
-(* \underline{This action has been modified to use phase-1 quorums.}^' *)                                *)
+(* $i+1$ phase~2b message with value $v$.  *)
+(* \underline{This action has been modified to use phase-1 quorums.}^' *)                             
 (***************************************************************************)
 UncoordinatedRecovery(i, a, v) ==  
   /\ i+1 \in FastNum
@@ -395,7 +392,7 @@ accLastMsg(a) ==
 AcceptorRetransmit(a) ==
   /\ rnd[a] # 0
   /\ Send(accLastMsg(a))
-  /\ UNCHANGED <<aVars, cVars, oVars>> \* amLeader, proposed, learned, goodSet
+  /\ UNCHANGED <<aVars, cVars, oVars>> 
 
 (***************************************************************************)
 (*`^$AcceptorNext(a)$ is the next-state action of acceptor $a$---that is,   *)
@@ -478,7 +475,7 @@ LoseMsg(m) ==
           /\ m = accLastMsg(m.acc)
           /\ m.acc \in goodSet
   /\ sentMsg' = sentMsg \ {m}
-  /\ UNCHANGED <<aVars, cVars, oVars>> \* amLeader, proposed, learned, goodSet
+  /\ UNCHANGED <<aVars, cVars, oVars>>
 
 (***************************************************************************)
 (*`^Action $OtherAction$ is the disjunction of all actions other than ones  *)
@@ -582,8 +579,9 @@ LA(c, Q) ==
 (***************************************************************************)
 THEOREM /\ Spec 
         /\ \E Q \in SUBSET Acceptor :
-               /\ \A i \in ClassicNum : /\ Q \in QuorumP1(i)
-                                        /\ Q \in QuorumP2(i)
+               /\ \A i \in ClassicNum : 
+                    /\ \E Q1 \in QuorumP1(i): Q1 \subseteq Q
+                    /\ \E Q2 \in QuorumP2(i): Q2 \subseteq Q
                /\ \E c \in Coord : <>[]LA(c, Q)
         => <>(learned # {})
 =============================================================================

@@ -12,7 +12,7 @@
     <stringAttribute key="distributedTLC" value="off"/>
     <stringAttribute key="distributedTLCVMArgs" value=""/>
     <intAttribute key="fpBits" value="1"/>
-    <intAttribute key="fpIndex" value="38"/>
+    <intAttribute key="fpIndex" value="60"/>
     <booleanAttribute key="fpIndexRandom" value="true"/>
     <intAttribute key="maxHeapSize" value="25"/>
     <intAttribute key="maxSetSize" value="1000000"/>
@@ -31,6 +31,7 @@
     </listAttribute>
     <listAttribute key="modelCorrectnessProperties">
         <listEntry value="0Spec =&gt; [](TypeOK /\ Nontriviality /\ Consistency)"/>
+        <listEntry value="1/\ Spec &#10;        /\ \E Q \in SUBSET Acceptor :&#10;               /\ \A i \in ClassicNum : &#10;                    /\ Q \in QuorumP1(i)&#10;                    /\ Q \in QuorumP2(i)&#10;               /\ \E c \in Coord : &lt;&gt;[]LA(c, Q)&#10;        =&gt; &lt;&gt;(learned # {})"/>
     </listAttribute>
     <intAttribute key="modelEditorOpenTabs" value="6"/>
     <stringAttribute key="modelExpressionEval" value=""/>
@@ -39,10 +40,10 @@
         <listEntry value="Val;;{v1, v2};1;1"/>
         <listEntry value="FastNum;;{1};0;0"/>
         <listEntry value="Coord;;{c1, c2};1;0"/>
-        <listEntry value="Acceptor;;{a1, a2, a3};1;1"/>
+        <listEntry value="Acceptor;;{a1, a2};1;1"/>
         <listEntry value="CoordOf;i:;c1;0;0"/>
-        <listEntry value="QuorumP1;i:;{{a1,a2,a3}};0;0"/>
-        <listEntry value="QuorumP2;i:;{{a1,a2},{a2,a3},{a1,a3}};0;0"/>
+        <listEntry value="QuorumP1;i:;{{a1},{a2}};0;0"/>
+        <listEntry value="QuorumP2;i:;{{a1,a2}};0;0"/>
     </listAttribute>
     <stringAttribute key="modelParameterContraint" value=""/>
     <listAttribute key="modelParameterDefinitions">
